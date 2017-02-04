@@ -97,10 +97,10 @@ namespace Oxide.Plugins
                 irc.Send("PRIVMSG " + channel.name + " :[CHAT]: " + arg.Player().displayName + ": " + arg.ArgsStr);
             }*/
             if (Interface.Oxide.RootPluginManager.GetPlugin("BetterChat") == null)
-                irc.Broadcast("[CHAT]: " + arg.Player().displayName + ": " + arg.ArgsStr);
+                irc.Broadcast("[CHAT]: " + arg.Player().displayName + ": " + arg.FullString);
             else
             {
-                string msg = (string)Interface.Oxide.RootPluginManager.GetPlugin("BetterChat").Call("API_GetFormatedMessage", arg.Player().UserIDString, arg.ArgsStr, false);
+                string msg = (string)Interface.Oxide.RootPluginManager.GetPlugin("BetterChat").Call("API_GetFormatedMessage", arg.Player().UserIDString, arg.FullString, false);
                 Regex colorregex = new Regex(@"<color=#(?<code>[a-fA-F0-9]{6})>", RegexOptions.ExplicitCapture);
                 while(colorregex.IsMatch(msg) == true)
                 {
