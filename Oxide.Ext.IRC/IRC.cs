@@ -35,7 +35,7 @@ namespace Oxide.Ext.IRC.Libraries
         private Oxide.Plugins.RustIRC rust { get { return Oxide.Ext.IRC.IRCExtension.rust; } }
         public static IRC instance;
 
-        private Thread thread = null;
+        public Thread thread = null;
         private TcpClient socket = null;
         private Stream stream = null;
         private bool isConnected = false; public bool connected { get { return isConnected; } }
@@ -104,15 +104,25 @@ namespace Oxide.Ext.IRC.Libraries
             counterrs = 0;
             dfs = Interface.Oxide.DataFileSystem;
             langs = new Dictionary<string, string>()
+            {
+                {"IRC_PlayersResponse", "Connected Players [{count}/{maxplayers}: {playerslist}"},
                 {
-                    { "IRC_PlayersResponse", "Connected Players [{count}/{maxplayers}: {playerslist}" },
-                    { "RUST_OnInitMsg", "{irccolor:lred}{ircbold}Rust server has successfully initialized.{ircbold}{irccolor}" },
-                    { "RUST_OnPlayerInit", "[CONNECT]: {playername} has connected!" },
-                    { "RUST_OnPlayerInitAdmin", "[CONNECT]: {playername} has connected! (IP: {playerip}, SID64: {playersteamid})" },
-                    { "RUST_OnPlayerDisconnect", "[DISCONNECT]: {playername} has disconnected! ({irccolor:orange}{ircbold}{reason}{ircbold}{irccolor})" },
-                    //{ "RUST_OnBetterChat", "[CHAT] {FormattedTitle} {PlayerName}[{ID}]: {Message}" }
-                };
-            try {
+                    "RUST_OnInitMsg",
+                    "{irccolor:lred}{ircbold}Rust server has successfully initialized.{ircbold}{irccolor}"
+                },
+                {"RUST_OnPlayerInit", "[CONNECT]: {playername} has connected!"},
+                {
+                    "RUST_OnPlayerInitAdmin",
+                    "[CONNECT]: {playername} has connected! (IP: {playerip}, SID64: {playersteamid})"
+                },
+                {
+                    "RUST_OnPlayerDisconnect",
+                    "[DISCONNECT]: {playername} has disconnected! ({irccolor:orange}{ircbold}{reason}{ircbold}{irccolor})"
+                },
+                //{ "RUST_OnBetterChat", "[CHAT] {FormattedTitle} {PlayerName}[{ID}]: {Message}" }
+            };
+            try
+            {
                 settings = dfs.ReadObject<Settings>(Path.Combine(Interface.Oxide.ConfigDirectory, "IRC"));
                 //langs = dfs.ReadObject<Dictionary<string, string>>(Path.Combine(Interface.Oxide.LangDirectory, "IRC"));
             }
@@ -139,24 +149,30 @@ namespace Oxide.Ext.IRC.Libraries
                 };
                 //dfs.WriteObject<Dictionary<string, string>>(Path.Combine(Interface.Oxide.LangDirectory, "IRC"), langs, true);
             }*/
+            thread = new Thread(Loop);
+            thread.Start();
+
+            Connect();
+        }
+
+        public void Connect() {
             socket = new TcpClient();
             socket.Connect(settings.host, settings.port);
             Interface.Oxide.LogWarning(settings.host + settings.port);
             socket.NoDelay = true;
             stream = socket.GetStream();
             isConnected = true;
-            thread = new Thread(Loop);
-            this.Send("NICK " + settings.nick);
-            this.Send("USER " + settings.ident + " - - :" + settings.realname);
-            thread.Start();
+            Send("NICK " + settings.nick);
+            Send("USER " + settings.ident + " - - :" + settings.realname);
         }
 
         public bool Disconnect(string reason = "Bye!")
         {
             try
             {
-                this.Send("QUIT :" + reason);
+                Send("QUIT :" + reason);
                 socket.Close();
+                isConnected = false;
                 return true;
             }
             catch
@@ -169,22 +185,25 @@ namespace Oxide.Ext.IRC.Libraries
         {
             if (!isConnected) return;
 
-            if (disconnect)
+            try
             {
-                this.Disconnect();
-                return;
-            }
-            try {
+                Disconnect();
                 socket.Close();
             }
-            catch { }
-            isConnected = false;
+            catch
+            {
+                // ignored
+            }
         }
+
         static int counterrs;
+
         private void Loop()
         {
-            while (isConnected)
+            while (true)
             {
+                if (!isConnected) continue;
+
                 try {
                     this.parse(this.Read());
                 }

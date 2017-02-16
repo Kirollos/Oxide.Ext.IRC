@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Reflection;
 using Oxide.Core;
 using Oxide.Core.Extensions;
 using Oxide.Core.Libraries;
@@ -29,7 +30,8 @@ namespace Oxide.Ext.IRC
     public class IRCExtension : Extension
     {
         public override string Name => "IRC";
-        public override VersionNumber Version => new VersionNumber(1, 0, 0);
+        internal static readonly Version AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+        public override VersionNumber Version => new VersionNumber(AssemblyVersion.Major, AssemblyVersion.Minor, AssemblyVersion.Build);
         public override string Author => "Kirollos";
 
         public static Libraries.IRC irc;

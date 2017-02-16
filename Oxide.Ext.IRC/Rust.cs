@@ -41,6 +41,8 @@ namespace Oxide.Plugins
     {
         private Oxide.Ext.IRC.Libraries.IRC irc { get { return Oxide.Ext.IRC.IRCExtension.irc; } }
 
+        private Core.Libraries.Timer timer = Interface.Oxide.GetLibrary<Core.Libraries.Timer>();
+        
         private Command cmdlib;
 
         private void Puts(object data, params object[] args)
@@ -295,11 +297,9 @@ namespace Oxide.Plugins
                 SendToChat(arg.Player(), "Insufficient permission");
                 return;
             }
-            // TODO: Needs proper re-write
+
             irc.Disconnect("Restarting");
-            irc.Destruct();
-            Ext.IRC.IRCExtension.instance.Manager.GetLibrary("IRC").Shutdown();
-            Ext.IRC.IRCExtension.instance.Manager.RegisterLibrary("IRC", Ext.IRC.IRCExtension.irc = new Ext.IRC.Libraries.IRC());
+            timer.Once(5f, () => irc.Connect());
         }
 
     }
