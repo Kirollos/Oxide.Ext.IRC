@@ -214,6 +214,7 @@ namespace Oxide.Ext.IRC.Libraries
                 if(counterrs == 10)
                 {
                     Interface.Oxide.LogError("IRC has hit 10 errors! Destructing!");
+                    counterrs = 0;
                     this.Destruct();
                 }
             }
@@ -373,7 +374,10 @@ namespace Oxide.Ext.IRC.Libraries
                             lerank = "";
                         }
 
-                        inschan.userlist.Add(lename, lerank);
+                        if (!inschan.userlist.ContainsKey(lename))
+                            inschan.userlist.Add(lename, lerank);
+                        else
+                            inschan.userlist[lename] = lerank;
                     }
                 }
 
@@ -393,7 +397,9 @@ namespace Oxide.Ext.IRC.Libraries
                     //SendOrder(() =>
                     //    rust.SendToChat("[IRC:JOIN] " + user + " has joined " + chan)
                     //);
-                    GetChan(chan).userlist.Add(user, "");
+                    var channel = GetChan(chan);
+                    if (!channel.userlist.ContainsKey(user))
+                        channel.userlist.Add(user, "");
                 }
 
                 if (command == "PART")
@@ -434,8 +440,10 @@ namespace Oxide.Ext.IRC.Libraries
                     foreach (var inschan in settings.channels)
                     {
                         string therank = inschan.userlist.Where(x => x.Key == user).FirstOrDefault().Value;
-                        inschan.userlist.Remove(user);
-                        inschan.userlist.Add(user, therank);
+                        if (!inschan.userlist.ContainsKey(user))
+                            inschan.userlist.Add(user, therank);
+                        else
+                            inschan.userlist[user] = therank;
                     }
                 }
 
