@@ -45,6 +45,8 @@ namespace Oxide.Plugins
         
         private Command cmdlib;
 
+        protected Covalence covalence = Interface.Oxide.GetLibrary<Covalence>();
+
         private void Puts(object data, params object[] args)
         {
             Interface.Oxide.LogInfo(Convert.ToString(data), args);
@@ -67,6 +69,7 @@ namespace Oxide.Plugins
         public RustIRC()
         {
             rustclass = new RUST();
+            Version = new VersionNumber(1, 0, 1);
         }
 
         [HookMethod("Init")]
@@ -98,11 +101,14 @@ namespace Oxide.Plugins
             {
                 irc.Send("PRIVMSG " + channel.name + " :[CHAT]: " + arg.Player().displayName + ": " + arg.ArgsStr);
             }*/
-            if (Interface.Oxide.RootPluginManager.GetPlugin("BetterChat") == null)
+            var betterChat = Interface.Oxide.RootPluginManager.GetPlugin("BetterChat");
+
+            if (betterChat == null)
                 irc.Broadcast("[CHAT]: " + arg.Player().displayName + ": " + arg.FullString);
             else
             {
-                string msg = (string)Interface.Oxide.RootPluginManager.GetPlugin("BetterChat").Call("API_GetFormatedMessage", arg.Player().UserIDString, arg.FullString, false);
+                var msg = (string)betterChat.Call("API_GetFormatedMessage", arg.Player().UserIDString, arg.FullString, false) ??
+                    (string)betterChat.Call("API_GetFormattedMessage", covalence.Players.FindPlayerById(arg.Player().UserIDString), arg.FullString, false);
                 Regex colorregex = new Regex(@"<color=#(?<code>[a-fA-F0-9]{6})>", RegexOptions.ExplicitCapture);
                 while(colorregex.IsMatch(msg) == true)
                 {
