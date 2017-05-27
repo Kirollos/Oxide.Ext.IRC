@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2016 Kirollos
+    Copyright 2017 Kirollos
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ namespace Oxide.Ext.IRC.Libraries
             public string name { get; set; }
             public string key { get; set; }
             public bool adminchan { get; set; }
+            public bool lobby { get; set; }
             [JsonIgnore]
             public Dictionary<string, string> userlist = new Dictionary<string, string>();
             [JsonIgnore]
@@ -94,9 +95,11 @@ namespace Oxide.Ext.IRC.Libraries
                 realname = "Rust Test Bot",
                 ns_password = "",
                 commandprefix = "!",
-                channels = new List<Channel>() { new Channel() { name = "#RustIRC", key = "", adminchan = false } }
+                channels = new List<Channel>() { new Channel() { name = "#RustIRC", key = "", adminchan = false , lobby = false} }
             };
         }
+
+        private bool toghost = false;
 
         public IRC()
         {
@@ -105,7 +108,7 @@ namespace Oxide.Ext.IRC.Libraries
             dfs = Interface.Oxide.DataFileSystem;
             langs = new Dictionary<string, string>()
             {
-                {"IRC_PlayersResponse", "Connected Players [{count}/{maxplayers}: {playerslist}"},
+                {"IRC_PlayersResponse", "Connected Players [{count}/{maxplayers}]: {playerslist}"},
                 {
                     "RUST_OnInitMsg",
                     "{irccolor:lred}{ircbold}Rust server has successfully initialized.{ircbold}{irccolor}"
@@ -150,7 +153,7 @@ namespace Oxide.Ext.IRC.Libraries
                 //dfs.WriteObject<Dictionary<string, string>>(Path.Combine(Interface.Oxide.LangDirectory, "IRC"), langs, true);
             }*/
             thread = new Thread(Loop);
-            thread.Start();
+            //thread.Start();
 
             Connect();
         }
@@ -162,6 +165,7 @@ namespace Oxide.Ext.IRC.Libraries
             socket.NoDelay = true;
             stream = socket.GetStream();
             isConnected = true;
+            thread.Start();
             Send("NICK " + settings.nick);
             Send("USER " + settings.ident + " - - :" + settings.realname);
         }
@@ -202,7 +206,7 @@ namespace Oxide.Ext.IRC.Libraries
         {
             while (true)
             {
-                if (!isConnected) continue;
+                if (!isConnected && counterrs == 11) break;
 
                 try {
                     this.parse(this.Read());
@@ -214,7 +218,7 @@ namespace Oxide.Ext.IRC.Libraries
                 if(counterrs == 10)
                 {
                     Interface.Oxide.LogError("IRC has hit 10 errors! Destructing!");
-                    counterrs = 0;
+                    counterrs++;
                     this.Destruct();
                 }
             }
@@ -334,6 +338,12 @@ namespace Oxide.Ext.IRC.Libraries
                 isRegistered = true;
                 if (!String.IsNullOrEmpty(settings.ns_password))
                 {
+                    if(this.toghost)
+                    {
+                        this.Say("NickServ", "GHOST " + settings.ns_password);
+                        this.Send("NICK " + this.settings.nick);
+                        this.toghost = false;
+                    }
                     this.Say("NickServ", "IDENTIFY " + settings.ns_password, false);
                 }
                 foreach (var channel in settings.channels)
@@ -384,7 +394,10 @@ namespace Oxide.Ext.IRC.Libraries
                 if (command == "433")
                 {
                     Interface.Oxide.LogError("[IRC ERROR]: Nickname already taken!");
-                    this.Destruct();
+                    Interface.Oxide.LogWarning("[IRC WARNING]: Attempting "+this.settings.nick+"2");
+                    this.Send("NICK " + this.settings.nick + "2");
+                    this.toghost = true;
+                    //this.Destruct();
                 }
 
                 if (command == "JOIN")
@@ -562,6 +575,19 @@ namespace Oxide.Ext.IRC.Libraries
                         {
                             //Interface.Oxide.RootPluginManager.GetPlugin("EnhancedBanSystem").Call(func, args);
                         }
+
+                        if(cmd == "console" && IsOp(user, chan))
+                        {
+                            if(msg.Length == 0 || msg == "")
+                            {
+                                this.Say(chan, "[SYNTAX]: !console [command] [[args]]");
+                            }
+                            var args = msg.Split(new char[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                            string consolecmd = args[0];
+                            rust.RunCommand(args[0], args[1]);
+                            this.Say(chan, "Successfully executed \"" + msg + "\"!");
+                            return;
+                        }
                     }
                 }
             }
@@ -571,28 +597,28 @@ namespace Oxide.Ext.IRC.Libraries
         {
             return chan.userlist[name] == "~";
         }
-        public bool IsAdmin(string name, Channel chan)
+        public bool IsAdmin(string name, Channel chan, bool actualrank = false)
         {
-            return chan.userlist[name] == "&";
+            return chan.userlist[name] == "&" || (!actualrank ? (IsOwner(name, chan)) : false);
         }
-        public bool IsOp(string name, Channel chan)
+        public bool IsOp(string name, Channel chan, bool actualrank = false)
         {
-            return chan.userlist[name] == "@";
+            return chan.userlist[name] == "@" || (!actualrank ? (IsAdmin(name, chan, true) ||IsOwner(name, chan)) : false);
         }
-        public bool IsHalfOp(string name, Channel chan)
+        public bool IsHalfOp(string name, Channel chan, bool actualrank = false)
         {
-            return chan.userlist[name] == "%";
+            return chan.userlist[name] == "%" || (!actualrank ? (IsOp(name, chan, true) ||IsAdmin(name, chan, true) ||IsOwner(name, chan)) : false);
         }
-        public bool IsVoice(string name, Channel chan)
+        public bool IsVoice(string name, Channel chan, bool actualrank = false)
         {
-            return chan.userlist[name] == "+";
+            return chan.userlist[name] == "+" || (!actualrank ? (IsHalfOp(name, chan, true) ||IsOp(name, chan, true) ||IsAdmin(name, chan, true) ||IsOwner(name, chan)) : false);
         }
 
-        public bool IsOwner(string name, string chan) { return IsOwner(name, GetChan(chan)); }
-        public bool IsAdmin(string name, string chan) { return IsAdmin(name, GetChan(chan)); }
-        public bool IsOp(string name, string chan) { return IsOp(name, GetChan(chan)); }
-        public bool IsHalfOp(string name, string chan) { return IsHalfOp(name, GetChan(chan)); }
-        public bool IsVoice(string name, string chan) { return IsVoice(name, GetChan(chan)); }
+        public bool IsOwner(string name, string chan, bool actualrank = false) { return IsOwner(name, GetChan(chan)); }
+        public bool IsAdmin(string name, string chan, bool actualrank = false) { return IsAdmin(name, GetChan(chan), actualrank); }
+        public bool IsOp(string name, string chan, bool actualrank = false) { return IsOp(name, GetChan(chan), actualrank); }
+        public bool IsHalfOp(string name, string chan, bool actualrank = false) { return IsHalfOp(name, GetChan(chan), actualrank); }
+        public bool IsVoice(string name, string chan, bool actualrank = false) { return IsVoice(name, GetChan(chan), actualrank); }
 
         public bool IsChanAdmin(string chan)
         {
@@ -605,6 +631,7 @@ namespace Oxide.Ext.IRC.Libraries
             foreach (var channel in Channels)
             {
                 if (channel.adminchan) continue;
+                if (channel.lobby) continue;
                 this.Say(channel.name, message);
                 returnval.Add(channel);
             }
@@ -617,6 +644,18 @@ namespace Oxide.Ext.IRC.Libraries
             foreach (var channel in Channels)
             {
                 if (!channel.adminchan) continue;
+                this.Say(channel.name, message);
+                returnval.Add(channel);
+            }
+            return returnval;
+        }
+
+        public List<Channel> BroadcastLobby(string message)
+        {
+            List<Channel> returnval = new List<Channel>();
+            foreach (var channel in Channels)
+            {
+                if (!channel.lobby) continue;
                 this.Say(channel.name, message);
                 returnval.Add(channel);
             }

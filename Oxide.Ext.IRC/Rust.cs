@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2016 Kirollos
+    Copyright 2017 Kirollos
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ namespace Oxide.Plugins
         [HookMethod("Init")]
         private void Init()
         {
-            
+
         }
 
         [HookMethod("OnServerInitialized")]
@@ -149,6 +149,10 @@ namespace Oxide.Plugins
             {
                 { "playername", player.displayName }
             }));
+            irc.BroadcastLobby(IRCColour.Translate("RUST_OnPlayerInit", new Dictionary<string, string>()
+            {
+                { "playername", player.displayName }
+            }));
             irc.BroadcastAdmin(IRCColour.Translate("RUST_OnPlayerInitAdmin", new Dictionary<string, string>()
             {
                 { "playername", player.displayName },
@@ -166,6 +170,11 @@ namespace Oxide.Plugins
             }*/
             //irc.Broadcast("[DISCONNECT]: " + player.displayName + " has disconnected! (" + reason + ")");
             irc.Broadcast(IRCColour.Translate("RUST_OnPlayerDisconnect", new Dictionary<string, string>()
+            {
+                { "playername", player.displayName },
+                { "reason", reason }
+            }));
+            irc.BroadcastLobby(IRCColour.Translate("RUST_OnPlayerDisconnect", new Dictionary<string, string>()
             {
                 { "playername", player.displayName },
                 { "reason", reason }
@@ -238,6 +247,8 @@ namespace Oxide.Plugins
         public void SendToChat(string message) => rustclass.SendToChat(message);
 
         public void SendToChat(BasePlayer p, string message) => rustclass.SendToChat(p, message);
+
+        public void RunCommand(string command, params object[] args) => covalence.Server.Command(command, args);
         
         
         [HookMethod("CommandIRCPM")]

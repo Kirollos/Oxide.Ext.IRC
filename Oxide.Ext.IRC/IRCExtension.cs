@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2016 Kirollos
+    Copyright 2017 Kirollos
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ namespace Oxide.Ext.IRC
         public override void OnModLoad()
         {
             Interface.Oxide.RootPluginManager.AddPlugin(rust = new Oxide.Plugins.RustIRC());
+            Interface.Oxide.LogInfo("Loading IRC Extension by " + this.Author + " v" + this.Version);
         }
 
         private void OnFrame(float delta)
