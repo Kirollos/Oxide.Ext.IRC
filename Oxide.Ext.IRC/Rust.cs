@@ -21,6 +21,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 using Oxide.Core;
+using Oxide.Core.CSharp;
 using Oxide.Core.Extensions;
 using Oxide.Core.Libraries;
 using Oxide.Core.Plugins;

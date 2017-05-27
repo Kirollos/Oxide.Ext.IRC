@@ -11,7 +11,8 @@
     <AssemblyName>Oxide.Ext.IRC</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -44,14 +47,17 @@
     <Reference Include="Facepunch.Network">
       <HintPath>lib\Facepunch.Network.dll</HintPath>
     </Reference>
+    <Reference Include="Facepunch.UnityEngine">
+      <HintPath>lib\Facepunch.UnityEngine.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Oxide.Core">
       <HintPath>lib\Oxide.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Oxide.Ext.CSharp">
-      <HintPath>lib\Oxide.Ext.CSharp.dll</HintPath>
+    <Reference Include="Oxide.Core.CSharp">
+      <HintPath>lib\Oxide.Core.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Oxide.Game.Rust">
       <HintPath>lib\Oxide.Game.Rust.dll</HintPath>
@@ -74,7 +80,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetDir)\Oxide.Ext.IRC.dll D:\SteamCMD\steamcmd\steamapps\common\rust_dedicated\RustDedicated_Data\Managed</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
