@@ -92,6 +92,7 @@ namespace Oxide.Plugins
             {
                 //irc.Broadcast("Rust server has successfully initialized.");
                 irc.Broadcast(IRCColour.Translate("RUST_OnInitMsg"));
+                irc.BroadcastLobby(IRCColour.Translate("RUST_OnInitMsg"));
             }
         }
 

@@ -329,23 +329,29 @@ namespace Oxide.Ext.IRC.Libraries
             if (command == "PING")
             {
                 this.Send("PONG :" + trailing);
+                if (!this.isRegistered) return;
                 foreach (var inschan in settings.channels)
                     this.Send("NAMES " + inschan.name);                
             }
             else
             if (command == "001")
             {
-                isRegistered = true;
                 if (!String.IsNullOrEmpty(settings.ns_password))
                 {
-                    if(this.toghost)
+                    if (this.toghost)
                     {
-                        this.Say("NickServ", "GHOST " + settings.ns_password);
-                        this.Send("NICK " + this.settings.nick);
-                        this.toghost = false;
+                        this.Say("NickServ", "GHOST " + settings.nick + " " + settings.ns_password, false);
+                        return;
+                        //this.Send("NICK " + this.settings.nick);
+                        //this.toghost = false;
                     }
-                    this.Say("NickServ", "IDENTIFY " + settings.ns_password, false);
+                    else
+                    {
+                        isRegistered = true;
+                        this.Say("NickServ", "IDENTIFY " + settings.ns_password, false);
+                    }
                 }
+                isRegistered = true;
                 foreach (var channel in settings.channels)
                 {
                     this.Send("JOIN " + channel.name + " " + channel.key);
@@ -395,8 +401,8 @@ namespace Oxide.Ext.IRC.Libraries
                 {
                     Interface.Oxide.LogError("[IRC ERROR]: Nickname already taken!");
                     Interface.Oxide.LogWarning("[IRC WARNING]: Attempting "+this.settings.nick+"2");
-                    this.Send("NICK " + this.settings.nick + "2");
                     this.toghost = true;
+                    this.Send("NICK " + this.settings.nick + "2");
                     //this.Destruct();
                 }
 
@@ -463,8 +469,27 @@ namespace Oxide.Ext.IRC.Libraries
                 if (command == "PRIVMSG")
                 {
                     chan = parameters[0];
-                    //if (trailing[0] == '!')
-                    if(trailing[0] == (String.IsNullOrEmpty(settings.commandprefix) ? '!' : settings.commandprefix[0]))
+                    string msg = "";
+                    string user = prefix.Split('!')[0];
+                    string ident = prefix.Split('!')[1].Split('@')[0];
+                    string host = prefix.Split('@')[1];
+
+                    if (user == "NickServ")
+                    {
+                        if (trailing.Contains("Ghost with your nick has been killed"))
+                        {
+                            this.Send("NICK " + this.settings.nick);
+                            this.toghost = false;
+                            this.Say("NickServ", "IDENTIFY " + settings.ns_password, false);
+                            isRegistered = true;
+                            foreach (var channel in settings.channels)
+                            {
+                                this.Send("JOIN " + channel.name + " " + channel.key);
+                            }
+                        }
+                    }
+
+                    if (trailing[0] == (String.IsNullOrEmpty(settings.commandprefix) ? '!' : settings.commandprefix[0]))
                     {
                         string cmd;
                         try
@@ -477,10 +502,7 @@ namespace Oxide.Ext.IRC.Libraries
                         {
                             cmd = trailing.Trim().ToLower();
                         }
-                        string msg = "";
-                        string user = prefix.Split('!')[0];
-                        string ident = prefix.Split('!')[1].Split('@')[0];
-                        string host = prefix.Split('@')[1];
+                        
                         cmd = cmd.Remove(0, 1); // remove the prefix pls
 
                         msg = trailing.Remove(0, 1 + cmd.Length).Trim();
