@@ -70,7 +70,7 @@ namespace Oxide.Plugins
         public RustIRC()
         {
             rustclass = new RUST();
-            Version = new VersionNumber(1, 0, 1);
+            Version = new VersionNumber(IRCExtension.AssemblyVersion.Major, IRCExtension.AssemblyVersion.Minor, IRCExtension.AssemblyVersion.Build);
         }
 
         [HookMethod("Init")]
