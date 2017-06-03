@@ -153,7 +153,7 @@ namespace Oxide.Ext.IRC.Libraries
                 //dfs.WriteObject<Dictionary<string, string>>(Path.Combine(Interface.Oxide.LangDirectory, "IRC"), langs, true);
             }*/
             thread = new Thread(Loop);
-            //thread.Start();
+            thread.Start();
 
             Connect();
         }
@@ -165,7 +165,6 @@ namespace Oxide.Ext.IRC.Libraries
             socket.NoDelay = true;
             stream = socket.GetStream();
             isConnected = true;
-            thread.Start();
             Send("NICK " + settings.nick);
             Send("USER " + settings.ident + " - - :" + settings.realname);
         }
