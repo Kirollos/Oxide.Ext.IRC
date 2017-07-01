@@ -506,8 +506,8 @@ namespace Oxide.Ext.IRC.Libraries
 
                         msg = trailing.Remove(0, 1 + cmd.Length).Trim();
                         cmd = cmd.Trim();
-
-                        if (cmd == "say")
+                        // +, %, @ and ~ are allowed except &
+                        if (cmd == "say" && (IsVoice(user, chan, true) || IsHalfOp(user, chan, true) || IsOp(user, chan, true) || IsOwner(user, chan, true) ) && !IsAdmin(user, chan, true) )
                         {
                             if (String.IsNullOrEmpty(msg))
                             {
@@ -523,13 +523,16 @@ namespace Oxide.Ext.IRC.Libraries
                         {
                             SendOrder(() =>
                             {
-                                //string listStr = "Connected Players ["+BasePlayer.activePlayerList.Count+"/"+ConVar.Server.maxplayers+"]: ";
                                 string listStr = "";
                                 var pList = BasePlayer.activePlayerList;
-                                int i = 0;
+                                int i = -1;
+                            pplayersdo:
+                                i++;
+                                listStr = "";
                                 foreach (var player in pList)
                                 {
                                     listStr += (player.displayName + "[" + i++ + "]");
+                                    if (i % 10 == 0 && i != pList.Count) break;
                                     if(i != pList.Count)
                                         listStr += ",";
                                 }
@@ -539,6 +542,7 @@ namespace Oxide.Ext.IRC.Libraries
                                     { "maxplayers", Convert.ToString(ConVar.Server.maxplayers) },
                                     { "playerslist", listStr }
                                 }));
+                                goto pplayersdo;
                             });
                         }
 
