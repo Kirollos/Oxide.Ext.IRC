@@ -525,14 +525,10 @@ namespace Oxide.Ext.IRC.Libraries
                             {
                                 string listStr = "";
                                 var pList = BasePlayer.activePlayerList;
-                                int i = -1;
-                            pplayersdo:
-                                i++;
-                                listStr = "";
+                                int i = 0;
                                 foreach (var player in pList)
                                 {
                                     listStr += (player.displayName + "[" + i++ + "]");
-                                    if (i % 10 == 0 && i != pList.Count) break;
                                     if(i != pList.Count)
                                         listStr += ",";
                                 }
@@ -542,7 +538,6 @@ namespace Oxide.Ext.IRC.Libraries
                                     { "maxplayers", Convert.ToString(ConVar.Server.maxplayers) },
                                     { "playerslist", listStr }
                                 }));
-                                goto pplayersdo;
                             });
                         }
 
