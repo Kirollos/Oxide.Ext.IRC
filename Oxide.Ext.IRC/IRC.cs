@@ -490,7 +490,7 @@ namespace Oxide.Ext.IRC.Libraries
 
                     if(trailing[0] == '\x01') // CTCP
                     {
-                        string ctcptype = trailing.Substring(1, trailing.IndexOf(' ', 1));
+                        string ctcptype = trailing.Substring(1, trailing.IndexOf(' ', 1)-1);
                         switch (ctcptype)
                         {
                             case "VERSION":
