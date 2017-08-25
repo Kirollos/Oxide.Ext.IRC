@@ -488,6 +488,23 @@ namespace Oxide.Ext.IRC.Libraries
                         }
                     }
 
+                    if(trailing[0] == '\x01') // CTCP
+                    {
+                        string ctcptype = trailing.Substring(1, trailing.IndexOf(' ', 1));
+                        switch (ctcptype)
+                        {
+                            case "VERSION":
+                                this.Notice(user, "\x01VERSION RustIRC extension v" + IRCExtension.instance.Version + " by Kirollos\x01");
+                                break;
+                            case "PING":
+                                this.Notice(user, "\x01PING " + DateTime.UtcNow.ToString() + "\x01");
+                                break;
+                            default:
+                                this.Notice(user, "\x01" + ctcptype + " idk :(\x01");
+                                break;
+                        }
+                    }
+
                     if (trailing[0] == (String.IsNullOrEmpty(settings.commandprefix) ? '!' : settings.commandprefix[0]))
                     {
                         string cmd;
