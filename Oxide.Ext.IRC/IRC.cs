@@ -469,9 +469,22 @@ namespace Oxide.Ext.IRC.Libraries
                 {
                     chan = parameters[0];
                     string msg = "";
-                    string user = prefix.Split('!')[0];
-                    string ident = prefix.Split('!')[1].Split('@')[0];
-                    string host = prefix.Split('@')[1];
+                    //string user = prefix.Split('!')[0];
+                    //string ident = prefix.Split('!')[1].Split('@')[0];
+                    //string host = prefix.Split('@')[1];
+                    string  user = "",
+                            ident = "",
+                            host = "";
+                    try
+                    {
+                        user = prefix.Split('!')[0];
+                        ident = prefix.Split('!')[1].Split('@')[0];
+                        host = prefix.Split('@')[1];
+                    }
+                    catch
+                    {
+                        user = ident = host = prefix;
+                    }
 
                     if (user == "NickServ")
                     {
@@ -490,7 +503,7 @@ namespace Oxide.Ext.IRC.Libraries
 
                     if(trailing[0] == '\x01') // CTCP
                     {
-                        string ctcptype = trailing.Substring(1, trailing.IndexOf(' ', 1)-1);
+                        string ctcptype = trailing.Substring(1, (trailing.IndexOf(' ', 1)-1 > 0) ? (trailing.IndexOf(' ', 1) - 1) : trailing.Length-2);
                         switch (ctcptype)
                         {
                             case "VERSION":
