@@ -56,11 +56,14 @@
     <Reference Include="Oxide.Core">
       <HintPath>lib\Oxide.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Oxide.Core.CSharp">
-      <HintPath>lib\Oxide.Core.CSharp.dll</HintPath>
+    <Reference Include="Oxide.CSharp">
+      <HintPath>lib\Oxide.CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Oxide.Game.Rust">
-      <HintPath>lib\Oxide.Game.Rust.dll</HintPath>
+    <Reference Include="Oxide.Rust">
+      <HintPath>lib\Oxide.Rust.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.Unity">
+      <HintPath>lib\Oxide.Unity.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -159,7 +159,7 @@ namespace Oxide.Ext.IRC.Libraries
         }
 
         public void Connect() {
-            socket = new TcpClient();
+            socket = new TcpClient(AddressFamily.InterNetwork);
             socket.Connect(settings.host, settings.port);
             Interface.Oxide.LogWarning(settings.host + settings.port);
             socket.NoDelay = true;
